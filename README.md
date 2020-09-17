@@ -11,7 +11,7 @@ This is a sample of bank ui, which covers feature below:
 
 ### Requirements
 
-This project using
+This project using:
 
 - nodejs v10.x
 - PHP v7.2
