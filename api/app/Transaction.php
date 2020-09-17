@@ -10,6 +10,9 @@ class Transaction extends Model
     protected $fillable = [
         'to', 'from', 'amount', 'details'
     ];
+    protected $hidden = [
+        'updated_at', 'created_at'
+    ];
 
     public static function byAccount($id)
     {

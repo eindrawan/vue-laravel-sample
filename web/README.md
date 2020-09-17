@@ -1,22 +1,28 @@
-# ybank
+### Starts the Frontend
 
-> ybank - frontend
+This module requires [Node.js](https://nodejs.org/) v10.x to run.
+Install the dependencies and devDependencies and start the server.
 
-## Build Setup
-
-```bash
-# install dependencies
+```sh
+$ cd web
 $ yarn install
-
-# serve with hot reload at localhost:3000
-$ yarn dev
-
-# build for production and launch server
-$ yarn build
-$ yarn start
-
-# generate static project
-$ yarn generate
 ```
 
-For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
+# serve with hot reload at localhost:3000
+
+```sh
+$ yarn dev
+```
+
+# build for production and launch server
+
+```sh
+$ yarn build
+$ yarn start
+```
+
+# generate static project
+
+```sh
+$ yarn generate
+```

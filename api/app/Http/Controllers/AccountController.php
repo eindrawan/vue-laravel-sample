@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use App\Services\AccountService;
 use Validator;
 use Exception;
+use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AccountController extends Controller
 {
@@ -31,10 +33,20 @@ class AccountController extends Controller
     {
         $account = $this->account->getDetails($id);
 
-        return response()->json([
-            'success' => true,
-            'data' => $account
-        ]);     
+        if(count($account) > 0){
+            $token = JWTAuth::fromUser($account[0]);
+            
+            return response()->json([
+                'success' => true,
+                'data' => $account,
+                'token' => $token
+            ]);     
+        } else {
+            return response()->json([
+                'success' => false,
+                'error' => 'Account not found'
+            ]);     
+        }
     }
 
     public function transactions($id){

@@ -21,12 +21,15 @@ Route::get('/', function () {
 Route::prefix('api')->group(function() {
     Route::get('accounts/{id}', 'AccountController@index');
     Route::get('accounts/{id}/transactions', 'AccountController@transactions');
+    Route::get('currencies', 'CurrencyController@getAll');
+    // Route::get('currencies', function () {
+    //     $account = DB::table('currencies')
+    //         ->get();
+
+    //     return $account;
+    // });
+});
+
+Route::prefix('api')->middleware(['jwt.verify'])->group(function() {
     Route::post('accounts/{id}/transactions', 'AccountController@transfer');
-
-    Route::get('currencies', function () {
-        $account = DB::table('currencies')
-            ->get();
-
-        return $account;
-    });
 });

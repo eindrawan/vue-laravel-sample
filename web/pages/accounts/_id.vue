@@ -30,6 +30,10 @@
         >
       </b-card>
 
+      <b-card v-show="errorMessage" class="mt-3 error">
+        {{ errorMessage }}
+      </b-card>
+
       <b-card class="mt-3" header="New Payment" v-show="show">
         <b-form @submit="onSubmit">
           <b-form-group id="input-group-1" label="To:" label-for="input-1">
@@ -76,80 +80,89 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import axios from "axios";
-import Vue from "vue";
+import Vue, { PropType } from "vue";
+import http from "../../plugins/http";
+import {
+  AccountService,
+  TransactionObject,
+  AccountObject
+} from "../../services/Accounts";
 
-export default {
+export default Vue.extend({
+  name: "AccountPage",
   data() {
     return {
       show: false,
-      payment: {},
-
-      account: null,
-      transactions: null
-
-      //loading: true
+      payment: {} as TransactionObject,
+      service: {} as AccountService,
+      account: {} as AccountObject,
+      errorMessage: "",
+      transactions: [] as Array<TransactionObject>,
+      loading: false
     };
   },
 
-  mounted() {
-    this.populate();
-  },
-
-  computed: {
-    loading() {
-      return !Boolean(this.account);
-    }
+  async mounted() {
+    this.loading = true;
+    this.service = new AccountService(Number(this.$route.params.id));
+    await this.populate();
+    this.loading = false;
   },
 
   methods: {
     async populate() {
       let [detail, trans] = await Promise.all([
-        axios.get(
-          `http://localhost:8000/api/accounts/${this.$route.params.id}`
-        ),
-        axios.get(
-          `http://localhost:8000/api/accounts/${this.$route.params.id}/transactions`
-        )
+        this.service.getDetail(),
+        this.service.getTransactions()
       ]);
 
-      if (!detail.data.success) {
+      if (!Object.keys(detail).length) {
         window.location.href = "/";
       } else {
-        this.account = detail.data.data[0];
-        this["transactions"] = trans.data.data;
+        this.account = detail;
+        this.transactions = trans;
 
-        var transactions = [];
+        var transactions: Array<TransactionObject> = [];
         for (let i = 0; i < this.transactions.length; i++) {
-          this.transactions[i].amount =
-            (this.account.currency === "usd" ? "$" : "€") +
-            this.transactions[i].amount;
+          if (this.transactions && this.transactions[i]) {
+            this.transactions[i].amount =
+              (this.account.currency === "usd" ? "$" : "€") +
+              this.transactions[i].amount;
 
-          if (this.account.id != this.transactions[i].to) {
-            this.transactions[i].amount = "-" + this.transactions[i].amount;
+            if (this.account.id != this.transactions[i].to) {
+              this.transactions[i].amount = "-" + this.transactions[i].amount;
+            }
+
+            transactions.push(this.transactions![i]);
           }
-
-          transactions.push(this.transactions[i]);
         }
 
         this.transactions = transactions;
       }
     },
-    async onSubmit(evt) {
+    async onSubmit(evt: Event) {
       evt.preventDefault();
 
-      await axios.post(
-        `http://localhost:8000/api/accounts/${this.$route.params.id}/transactions`,
-        this.payment
+      let ret = await this.service.transfer(
+        this.payment.to,
+        Number(this.payment.amount),
+        this.payment.details
       );
+      this.errorMessage = ret.data.error;
 
-      this.payment = {};
+      this.payment = {} as TransactionObject;
       this.show = false;
 
       // update items
       this.populate();
     }
   }
-};
+});
 </script>
+<style scoped>
+.error .card-body {
+  color: red;
+}
+</style>

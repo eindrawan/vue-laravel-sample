@@ -4,26 +4,36 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class Account extends Model
+class Account extends Model implements JWTSubject
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'name', 'balance'
     ];
+    
+    protected $hidden = [
+        'updated_at', 'created_at'
+    ];
+
+    /**
+     * Implementation of JWTSubject
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 
     public static function debit($id, $amount)
     {
-        // DB::enableQueryLog(); // Enable query log
         $affected = Account::where('id', $id)
             ->where('balance','>=',$amount)
             ->update(['balance' => DB::raw('balance -' . $amount)]);
 
-        // var_dump(DB::getQueryLog()); // Show results of log
         return $affected;
     }
 
